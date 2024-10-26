@@ -1,15 +1,59 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
     <title>Vite + TS</title>
+    <style>
+      body {
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f0f0f0;
+      }
+
+      #canvas {
+        border: 1px solid #777777;
+        border-radius: 4px;
+      }
+    </style>
   </head>
   <body>
     <div id="app">
-      <canvas id="canvas"></canvas>
-      <button id="next-button" type="button">Next</button>
+      <canvas
+        id="canvas"
+        width="390"
+        height="390"
+      >
+        Your browser does not support the HTML5 canvas tag.
+      </canvas>
+
+      <div
+        id="tools"
+        style="margin-top: 10px"
+      >
+        <button
+          type="button"
+          id="pencil-button"
+        >
+          펜
+        </button>
+        <button
+          type="button"
+          id="eraser-button"
+        >
+          지우개
+        </button>
+      </div>
     </div>
-    <script type="module" src="/src/main.ts"></script>
+    <script
+      type="module"
+      src="/src/main.ts"
+    ></script>
   </body>
 </html>

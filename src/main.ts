@@ -1,71 +1,110 @@
-const CANVAS_ID = 'canvas';
+import { CANVAS_IDS } from './constants/canvas-ids';
+import { type Tool } from './models/tool';
+import { toolButtons } from './lib/tool-buttons';
+import { toolFactory } from './lib/tool-factory';
+import { isValidToolType } from './lib/type-guard';
+import { getCanvas2DWithContext } from './lib/utils';
 
-const NEXT_BUTTON_ID = 'next-button';
+(function initApp(): void {
+  const { canvas, context } = getCanvas2DWithContext(CANVAS_IDS.DEFAULT);
 
-function isCanvasElement(element: HTMLElement | null): element is HTMLCanvasElement {
-  if (!element) {
-    return false;
-  }
+  let isDrawing = false;
 
-  return element.tagName === 'CANVAS';
-}
+  const changeTool = (tool: Tool) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('tool', tool.type);
+    window.history.pushState({}, '', url);
+  };
 
-function isButtonElement(element: HTMLElement | null): element is HTMLButtonElement {
-  if (!element) {
-    return false;
-  }
+  const getCurrentTool = (): Tool => {
+    const url = new URL(window.location.href);
+    const tool: string = (() => {
+      const tool = url.searchParams.get('tool');
 
-  return element.tagName === 'BUTTON';
-}
+      return tool ? tool : 'pencil';
+    })();
 
-function initApp(): void {
-  const canvas: HTMLCanvasElement = (() => {
-    const canvas = document.getElementById(CANVAS_ID);
-
-    if (!isCanvasElement(canvas)) {
-      throw new Error(`id가 ${CANVAS_ID}인 요소가 <canvas>가 아닙니다.`);
+    if (!isValidToolType(tool)) {
+      throw new Error('tool이 올바르지 않습니다.');
     }
 
-    return canvas;
-  })();
+    const createTool = toolFactory[tool];
+    const currentTool = createTool();
 
-  const context = canvas.getContext('2d');
+    return currentTool;
+  };
 
-  if (!context) {
-    throw new Error('2d context를 가져올 수 없습니다.');
-  }
+  toolButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const createTool = toolFactory[button.toolType];
+      const currentTool = createTool();
 
-  const nextButton: HTMLButtonElement = (() => {
-    const button = document.getElementById(NEXT_BUTTON_ID);
-
-    if (!isButtonElement(button)) {
-      throw new Error(`id가 ${NEXT_BUTTON_ID}인 요소가 <button>이 아닙니다.`);
-    }
-
-    return button;
-  })();
-
-  let step = 0;
-
-  nextButton.addEventListener('click', () => {
-    console.log({ canvas, context });
-
-    switch (step) {
-      case 0:
-        context.beginPath();
-        break;
-      case 1:
-        context.arc(100, 100, 50, 0, Math.PI * 2);
-        break;
-      case 2:
-        context.fill();
-        break;
-      default:
-        throw new Error('알 수 없는 step입니다.');
-    }
-
-    step++;
+      changeTool(currentTool);
+    });
   });
-}
 
-initApp();
+  canvas.addEventListener('mousedown', (event) => {
+    isDrawing = true;
+
+    const { clientX, clientY } = event;
+    const { left, top } = canvas.getBoundingClientRect();
+
+    const currentTool = getCurrentTool();
+
+    currentTool.startDrawing(context, clientX - left, clientY - top);
+  });
+
+  canvas.addEventListener('mousemove', (event) => {
+    if (!isDrawing) {
+      return;
+    }
+
+    const { left, top } = canvas.getBoundingClientRect();
+
+    const currentTool = getCurrentTool();
+
+    currentTool.draw(context, event.clientX - left, event.clientY - top);
+  });
+
+  canvas.addEventListener('mouseup', () => {
+    isDrawing = false;
+
+    const currentTool = getCurrentTool();
+
+    currentTool.stopDrawing(context);
+  });
+
+  canvas.addEventListener('touchstart', (event) => {
+    event.preventDefault();
+
+    isDrawing = true;
+
+    const { touches } = event;
+    const { clientX, clientY } = touches[0];
+    const { left, top } = canvas.getBoundingClientRect();
+
+    const currentTool = getCurrentTool();
+
+    currentTool.startDrawing(context, clientX - left, clientY - top);
+  });
+
+  canvas.addEventListener('touchmove', ({ touches }) => {
+    if (!isDrawing) {
+      return;
+    }
+
+    const { clientX, clientY } = touches[0];
+    const { left, top } = canvas.getBoundingClientRect();
+
+    const currentTool = getCurrentTool();
+
+    currentTool.draw(context, clientX - left, clientY - top);
+  });
+
+  canvas.addEventListener('touchend', () => {
+    const currentTool = getCurrentTool();
+
+    isDrawing = false;
+    currentTool.stopDrawing(context);
+  });
+})();
