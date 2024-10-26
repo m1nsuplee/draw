@@ -6,7 +6,7 @@ import { isValidToolType } from './lib/type-guard';
 import { getCanvas2DWithContext } from './lib/utils';
 
 (function initApp(): void {
-  const { canvas, context } = getCanvas2DWithContext(CANVAS_IDS.DEFAULT);
+  const { canvas, context } = getCanvas2DWithContext(CANVAS_IDS.default);
 
   let isDrawing = false;
 
