@@ -1,8 +1,6 @@
-import type { Tool } from '../models/tool';
-
-export const TOOL_TYPES: Record<Tool['type'], Tool['type']> = {
+export const TOOL_TYPES = {
   pencil: 'pencil',
   eraser: 'eraser',
-};
+} as const;
 
 export const TOOL_QUERY_STRING_KEY = 'tool';
