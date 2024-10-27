@@ -4,13 +4,14 @@ import { toolButtons } from './lib/tool-buttons';
 import { toolFactory } from './lib/tool-factory';
 import { isValidToolType } from './lib/type-guard';
 import { getCanvas2DWithContext } from './lib/utils';
+import { TOOL_QUERY_STRING_KEY, TOOL_TYPES } from './constants/tool';
 
 (function initApp(): void {
   const { canvas, context } = getCanvas2DWithContext(CANVAS_IDS.default);
 
   let isDrawing = false;
 
-  const changeTool = (tool: Tool) => {
+  const changeTool = (tool: Tool): void => {
     const url = new URL(window.location.href);
     url.searchParams.set('tool', tool.type);
     window.history.pushState({}, '', url);
@@ -18,20 +19,20 @@ import { getCanvas2DWithContext } from './lib/utils';
 
   const getCurrentTool = (): Tool => {
     const url = new URL(window.location.href);
-    const tool: string = (() => {
-      const tool = url.searchParams.get('tool');
+    const toolType: Tool['type'] = (() => {
+      const toolTypeQuery = url.searchParams.get(TOOL_QUERY_STRING_KEY) ?? TOOL_TYPES.pencil;
 
-      return tool ? tool : 'pencil';
+      if (!isValidToolType(toolTypeQuery)) {
+        throw new Error('tool의 타입이 유효하지 않습니다.');
+      }
+
+      return toolTypeQuery;
     })();
 
-    if (!isValidToolType(tool)) {
-      throw new Error('tool이 올바르지 않습니다.');
-    }
+    const createTool = toolFactory[toolType];
+    const tool = createTool();
 
-    const createTool = toolFactory[tool];
-    const currentTool = createTool();
-
-    return currentTool;
+    return tool;
   };
 
   toolButtons.forEach((button) => {
@@ -60,7 +61,6 @@ import { getCanvas2DWithContext } from './lib/utils';
     }
 
     const { left, top } = canvas.getBoundingClientRect();
-
     const currentTool = getCurrentTool();
 
     currentTool.draw(context, event.clientX - left, event.clientY - top);
@@ -102,9 +102,10 @@ import { getCanvas2DWithContext } from './lib/utils';
   });
 
   canvas.addEventListener('touchend', () => {
+    isDrawing = false;
+
     const currentTool = getCurrentTool();
 
-    isDrawing = false;
     currentTool.stopDrawing(context);
   });
 })();
