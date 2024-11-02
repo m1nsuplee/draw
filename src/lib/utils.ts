@@ -6,7 +6,7 @@ function isCanvasElement(element: HTMLElement | null): element is HTMLCanvasElem
   return element.tagName === 'CANVAS';
 }
 
-export function getCanvas2DWithContext(canvasId: string): {
+export function getCanvas2DWithContextById(canvasId: string): {
   canvas: HTMLCanvasElement;
   context: CanvasRenderingContext2D;
 } {

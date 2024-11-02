@@ -3,11 +3,11 @@ import { type Tool } from './models/tool';
 import { toolButtons } from './lib/tool-buttons';
 import { toolFactory } from './lib/tool-factory';
 import { isValidToolType } from './lib/type-guard';
-import { getCanvas2DWithContext } from './lib/utils';
+import { getCanvas2DWithContextById } from './lib/utils';
 import { TOOL_QUERY_STRING_KEY, TOOL_TYPES } from './constants/tool';
 
 (function initApp(): void {
-  const { canvas, context } = getCanvas2DWithContext(CANVAS_IDS.default);
+  const { canvas, context } = getCanvas2DWithContextById(CANVAS_IDS.default);
 
   let isDrawing = false;
 
